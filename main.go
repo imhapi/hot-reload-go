@@ -24,14 +24,14 @@ var (
 	extensions  []string
 	delay       time.Duration
 	verbose     bool
-	version     = "prod"
+	version     = "dev"
 	buildTime   = "unknown"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "hrhapi [flags]",
 	Short: "A hot reload CLI tool for Go projects",
-	Long:  `A hot reload CLI tool for Go projects.`,
+	Long:  `A hot reload CLI tool for Go projects`,
 	Run:   runHotReload,
 }
 
@@ -253,6 +253,7 @@ func (hr *HotReloader) rebuild() {
 	select {
 	case hr.rebuildChan <- struct{}{}:
 	default:
+
 	}
 }
 
@@ -372,6 +373,7 @@ func findMainPackage() (string, string) {
 				mainPath := fmt.Sprintf("./cmd/%s", entry.Name())
 				mainFile := filepath.Join("cmd", entry.Name(), "main.go")
 				if _, err := os.Stat(mainFile); err == nil {
+
 					modulePath := getModulePath()
 					var pkgPath string
 					if modulePath != "" {
