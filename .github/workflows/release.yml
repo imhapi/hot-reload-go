@@ -70,6 +70,7 @@ jobs:
         with:
           name: hrhapi-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/hrhapi-${{ matrix.os }}-${{ matrix.arch }}*
+          if-no-files-found: error
           retention-days: 7
 
   release:
@@ -98,10 +99,20 @@ jobs:
         with:
           path: dist
 
-      - name: Generate checksums
+      - name: Flatten artifacts and generate checksums
         run: |
+          # Move all binary files from subdirectories to dist root
+          find dist -mindepth 2 -type f -name "hrhapi-*" -exec mv {} dist/ \;
+          # Remove empty subdirectories
+          find dist -mindepth 1 -type d -empty -delete
+          # Generate checksums from files now in dist root
           cd dist
           shasum -a 256 hrhapi-* > checksums.txt
+          echo "Generated checksums:"
+          cat checksums.txt
+          echo ""
+          echo "Binaries ready for release:"
+          ls -lh hrhapi-* || true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -141,4 +152,3 @@ jobs:
             dist/checksums.txt
           draft: false
           prerelease: false
-
