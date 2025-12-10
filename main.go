@@ -30,8 +30,8 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "hrhapi [flags]",
-	Short: "Hot reload CLI tool for Go projects",
-	Long:  `Hot reload CLI tool for Go projects.`,
+	Short: "A hot reload CLI tool for Go projects",
+	Long:  `A hot reload CLI tool for Go projects.`,
 	Run:   runHotReload,
 }
 
@@ -55,6 +55,8 @@ func init() {
 	rootCmd.Flags().StringSliceVarP(&extensions, "ext", "x", []string{".go"}, "File extensions to watch")
 	rootCmd.Flags().DurationVarP(&delay, "delay", "d", 500*time.Millisecond, "Delay before rebuilding after file change")
 	rootCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
+
+	rootCmd.AddCommand(versionCmd)
 }
 
 type HotReloader struct {
@@ -251,7 +253,6 @@ func (hr *HotReloader) rebuild() {
 	select {
 	case hr.rebuildChan <- struct{}{}:
 	default:
-
 	}
 }
 
@@ -278,22 +279,21 @@ func (hr *HotReloader) rebuildLoop() {
 }
 
 func (hr *HotReloader) performRebuild() {
-	log.Println("File changed, rebuilding...")
+	log.Println(" File changed, rebuilding...")
 
 	if err := hr.build(); err != nil {
-		log.Printf("Build failed: %v", err)
+		log.Printf(" Build failed: %v", err)
 		return
 	}
 
-	log.Println("Build successful, restarting...")
+	log.Println(" Build successful, restarting...")
 
 	if err := hr.run(); err != nil {
-		log.Printf("Run failed: %v", err)
+		log.Printf(" Run failed: %v", err)
 	}
 }
 
 func (hr *HotReloader) Start() error {
-	// Initial build and run
 	if err := hr.build(); err != nil {
 		return fmt.Errorf("initial build failed: %w", err)
 	}
@@ -302,10 +302,8 @@ func (hr *HotReloader) Start() error {
 		return fmt.Errorf("initial run failed: %w", err)
 	}
 
-	// Start rebuild loop
 	go hr.rebuildLoop()
 
-	// Watch for file changes
 	go func() {
 		for {
 			select {
@@ -368,7 +366,6 @@ func getModulePath() string {
 }
 
 func findMainPackage() (string, string) {
-	// Check if cmd directory exists and find subdirectories
 	if entries, err := os.ReadDir("./cmd"); err == nil {
 		for _, entry := range entries {
 			if entry.IsDir() {
@@ -447,13 +444,13 @@ func runHotReload(cmd *cobra.Command, args []string) {
 		log.Fatalf("Failed to start hot reloader: %v", err)
 	}
 
-	log.Println("Hot reload started. Press Ctrl+C to stop.")
+	log.Println(" Hot reload started. Press Ctrl+C to stop.")
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	<-sigChan
 
-	log.Println("\nShutting down...")
+	log.Println("\n Shutting down...")
 }
 
 func main() {
