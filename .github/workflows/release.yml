@@ -101,10 +101,15 @@ jobs:
 
       - name: Flatten artifacts and generate checksums
         run: |
-          # Move all binary files from subdirectories to dist root
-          find dist -mindepth 2 -type f -name "hrhapi-*" -exec mv {} dist/ \;
-          # Remove empty subdirectories
-          find dist -mindepth 1 -type d -empty -delete
+          # Create a temporary directory for files
+          mkdir -p dist/temp
+          # Move all binary files from subdirectories to temp
+          find dist -mindepth 2 -type f -name "hrhapi-*" -exec mv {} dist/temp/ \;
+          # Remove all subdirectories (they may contain the binaries or be empty)
+          find dist -mindepth 1 -maxdepth 1 -type d ! -name temp -exec rm -rf {} \;
+          # Move files from temp to dist root
+          mv dist/temp/* dist/ 2>/dev/null || true
+          rmdir dist/temp 2>/dev/null || true
           # Generate checksums from files now in dist root
           cd dist
           shasum -a 256 hrhapi-* > checksums.txt
